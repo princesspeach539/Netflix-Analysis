@@ -1,0 +1,19 @@
+#### Preamble ####
+# Purpose: Clean the survey data downloaded from Keggle
+# Author: Reese Halfyard 
+# Data: April 27 2022
+# Contact: reese.halfyard@mail.utoronto.ca
+# License: MIT
+
+
+
+#### Workspace setup ####
+# Use R Projects, not setwd().
+library(haven)
+library(tidyverse)
+
+
+
+
+
+         
