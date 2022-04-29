@@ -1,0 +1,216 @@
+---
+title: "A Deep Dive Into Netflix and Their Path to Success"
+subtitle: "An analysis of the first popular digital streaming platform"
+author: 
+  - Reese Halfyard 
+thanks: "Code and data are available at: https://github.com/princesspeach539/Netflix-Analysis."
+date: "`r format(Sys.time(), '%d %B %Y')`"
+abstract: "Netflix is one of the most popular streaming platforms on an international scale, used in almost 200 countries across the globe. In this paper I will look into Netflix's successes according to country and year, including the count of movies and television series. Information about competing streaming platforms demonstrate the rapid growth of Netflix productions in 2020 and 2021 versus their former years, and their increasing success as the most popular and trustworthy streaming service.
+  \\par
+  \\textbf {Keywords:} Netflix, television, movies, America, Canada, international, production, competition, platform, internal, external, streaming, movie, television show"
+output: pdf_document
+toc: FALSE
+bibliography: references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(palmerpenguins)
+library(dplyr)
+library(janitor)
+library(knitr)
+library(rworldmap)
+library(maps)
+library(plotrix)
+
+```
+
+# 1. Introduction
+
+In 2008, Netflix released their company as a DVD rental service, in which customers could lend copies online and get it shipped directly to their home. This was innovative for its time; no other rental store could compete with the quick service and cheap monthly fee. By 2009, Netflix had earned $5.2 million dollars from an only North American consumer base. As their growth continued, other companies and corporations began to catch on. This includes Amazon, Disney, Apple, and HBO. By 2019, many series and films primarily known for being on Netflix were being removed and placed on separate streaming systems. This competition against the original player built a lot of room for improvement and growth. Netflix began producing their own television shows and movies, which gained a lot of traction. A strong example includes Stranger Things, whose first season reached an audience of 14.07 million people. In 2022, Netflix is still the highest ranking streaming platform, with over 20 million subscribers. 
+
+We will analyze Netflix's competition and personal growth through the years under a large lens. In addition to this, we will also take a look at the platforms internal functions. As a company which operates in almost 200 countries, there is a lot to investigate. We evaluate countries with the highest amount of Netflix productions, content, and years of popularity Did any specific television series help increase subscription count? Or perhaps radically decrease it? 
+
+There are many forms of bias within the Netflix community. This is in regards to which series or movies have received sequels regardless of popularity. Many fan favorite productions were shut down and not renewed despite having high viewership rates. By taking a deeper glance into Netflix's productions according to country, we may begin to understand sources of favoritism within the international company. 
+
+An additional consideration may be the outside influences corresponding to Netflix. There are many controversies which exist within the business. Why are they the best among other streaming platforms? Does Netflix aid individual creative industries? In addition, there will be a strong emphasis on the most frequently used genres and ratings on the streaming platform. I will discuss how this relates to the inventory on Netflix, and the popularity of their content. This analysis will also include a look at Netflix's most featured films and television, and if repetitive patterns demonstrate a lack of authenticity within the industry.
+
+
+```{r clean, include=FALSE}
+### Cleaning data ###
+
+raw_netflix <- 
+  read_csv(file = "raw_netflix.csv",
+           show_col_types = FALSE
+           )
+
+cleaned_netflix <-
+  clean_names(raw_netflix) |>
+ 
+  select(show_id, type, title, director, cast, country, date_added, release_year, rating, listed_in, duration)
+
+head(cleaned_netflix)
+```
+
+```{r save2, echo=FALSE}
+write_csv(
+  x = cleaned_netflix, 
+  file = "cleaned_netflix.csv"
+)
+```
+
+
+# 2. Data
+
+The data used in this paper was collected from Kaggle, an open data network with thousands of public sets for use. This dataset, “Netflix Movies and TV Shows” was created in October 2021, and is constantly being updated monthly by creator Shivam Bansal [@netflix]. It encasualtes over 8000 movies and television series on Netflix from its earliest years to 2021. Details of this dataset include directors, casting details, years, countries, and the duration of the media. This report has been used, cleaned, and created with the `R Statistical Cleaning Program` (R Reference). To create graphs and tables, I used `knitr` [@knitr] and `ggplot2` [@ggplot], alongside `dyplr` [@dplyr] to organize them. To clean this data, I used `janitor` [@janitor] and `tidyverse` [@tidyverse]. 
+
+This dataset has almost 8,000 values regarding information about Netflix and its inner functions. It was initially created by Shivam Bansal, and is licensed under a public domain [@netflix]. The purpose of this dataset is to provide statistics about the basics of Netflix, including its television series, directors, release dates, dates added to the platform, cast lists, synopsis, running times, and ratings. In this paper, I will explore this given dataset, the different intricacies within it, and the values are connected with one another. 
+
+
+Netflix is an international company with operations in almost 200 countries. In `Table 1`, we are given an exclusive look at how these countries operate, and how many movies/films and television series they have created and established on the platform since. By using `knitr` [@knitr] to create the table, and cleaning the data using `dplyr` [@dplyr], I was able to analyze and understand Netflix’s internal operations and production count. I started by `grouping_by` country, and using the `count()` function to count the number of productions per country, and `filter()` to select the countries. `Table 1` demonstrates the countries with the highest Netflix productions, regarding both film and television. It is important to understand which countries have the collectively highest productions, because this demonstrates Netflix’s priority levels. By visualizing this data, we are seeing the drastic difference between each country, and more specifically, how America has a much higher production count than any other country. This `country` variable provides insight to potential favoritism and perhaps even financial leniency within the Netflix corporation.
+
+
+```{r table1, echo=FALSE}
+### Create Table ###
+#table one: demonstrating # of art pieces published by city of Toronto
+cleaned_netflix |>
+  select(type, country) |>
+  group_by(country) |>
+  count () |>
+  filter(country == "United States" | country == "India" | country == "Canada" | country == "United Kingdom" | country == "Spain" | country == "Italy" | country == "Germany" | country == "China" | country == "Australia") |>
+  kable( caption = "Netflix Production Count by Country",
+    col.names = c("Country", "Production Count"),
+    title = "Countries with the highest production count",
+    digits = 1,
+    booktabs = TRUE, 
+    linesep = "",
+    align = c('l', 'l', 'c', 'c', 'r', 'r'),
+    format.args = list(big.mark = ",")
+  )
+```
+
+The next set of variables from the data set to analyze include ratings of television series and films on Netflix. Although Netflix is known for obtaining a children and kids friendly section in addition to their all ages sector on their platform, it is significant to look at the ratings variable, and the different aspects. There are a few selective ratings that hold the greatest usage. This includes TV-MA, which is used for both films and movies, and stands for TV Mature Audience. By cleaning the data set, I was able to pull out the most frequent and popular ratings used by Netflix. In Figure 1, we see the relationship between the ratings and type variables. This graph was curated using `ggplot2` [@ggplot], `filter()` [@dplyr] to specify the data, and positioned with `geom_bar` in order to present the difference in rating between Movies and Television Series. TV-MA makes up for 2000 of Netflix's movie entry's, where movies rated R sit below 1000. This correlates to an interest in curating content for more or all audiences. R rated media are exclusively only used for films, alongside G, PG, and PG-13. 
+
+
+```{r graph2, fig.cap="Television Series and Movies Ratings", echo=FALSE}
+### create graph ###
+## graph two: compare series and movies ratings on netflix 
+
+cleaned_netflix |> 
+  filter(rating == "G" | rating == "PG" | rating == "PG-13" | rating == "R" | rating == "TV-14" | rating == "TV-MA") |>
+  ggplot(aes(x = rating, fill = type)) + # aes abbreviates aesthetics and enables us 
+  # to specify the x axis variable 
+  geom_bar(position = "dodge") +
+  ggtitle("Television Series and Movies by Ratings") +
+  theme_minimal() +
+  labs(x="Ratings", y="Count", fill="Media Type") +
+  theme_classic()+
+  scale_fill_brewer(palette="Set2")
+```
+
+An increasing upsurge in documentaries and docu series has skyrocketed in the past few years, in regards to niche genres such as true crime. Netflix has taken advantage of this increasing popularity of documentaries in their platform catalog. While observing Netflix’s most popular genres in the listed_in variable, we see documentaries sit at 33%, by far the most popular. This pie chart, found at Figure 2, was created with help by `Quick-R, by data camp` [@pie], and supported by percentages to summarize the most favored genres. Using the `dplyr` functions [@dplyr] `select` and `filter`, I was able to concisely acquire the narrow data. In this data set, the rate and popularity of genres are completely different than those of other streaming platforms. While Netflix, as visualized here, demonstrates a stronger interest in documentaries, other platforms data sets including Amazon Prime Video and Disney Plus, do not. Netflix is the oldest streaming platform, which led to my interest in uncovering how their decisions are made. This data set demonstrates the steps they are taking to stand out, and maintain the strongest player in the game. 
+
+
+```{r piechart, fig.cap="Most Popular Netflix Series", echo=FALSE}
+### Create Pie Chart ###
+
+slices <- c(138, 110, 128, 55, 65, 359, 220, 3)
+lbls <- c("Dramas", "Comedies", "Action & Adventure", "Horror", "Thrillers", "Documentaries", "Kids' TV", "International Movies")
+pct <- round(slices/sum(slices)*100)
+lbls <- paste(lbls, pct) # add percents to labels
+lbls <- paste(lbls,"%",sep="") # ad % to labels
+pie(slices,labels = lbls, col=rainbow(length(lbls)),
+   main="Pie Chart of the Most Popular Genres")
+```
+
+```{r discover, include=FALSE}
+# used select, filter, and count functions to help discover popular genres for pie chart
+cleaned_netflix |>
+  select(listed_in) |>
+  filter(listed_in == "International Movies") |>
+  count () |>
+head()
+```
+
+
+
+# 3. Results
+
+Growth of Netflix in regards to their evolving business model. Netflix gained more popularity once they started to understand the system and evolving their data techniques. Their algorithm feeds into massively expanded once developing preferences specific to the user also known as a recommendation model. Blockbuster, among other older video companies, could not compete with this extremely fast and trending behavior. Currently, 40% of Netflix users do not pay for their subscription due to the pass and account sharing option provided with platform [@tech]. This is a major issue for competing platforms, who began using similar techniques to increase their subscription count, including algorithmic based searches and shared profiles. As we can see on Figure 3, the platform’s largest additions occurred in the year of 2018, where Netflix was at its popularity peak but other competing platforms were storming in. This graph was made using `ggplot2` [@ggplot] in order to narrow the wide x-axis and focus the data. Hulu reached fame in 2018 [@stream], and announced with a shock to fans, Apple TV and Disney+ in 2019 [@age]. These results provide us with the knowledge of Netflix’s intentions in developing more content, and the rapid increase in media production directly relates to the rapidly increasing competition in the streaming platform trend.
+
+
+
+```{r graph1, fig.cap="Netflix Productions According to Year", echo=FALSE}
+### create graph ###
+# graph one: netflix productions according to year
+cleaned_netflix |> 
+  ggplot(mapping = aes(x = release_year, fill = type)) + # aes abbreviates aesthetics and enables us 
+  # to specify the x axis variable 
+  coord_cartesian(xlim = c(2005, 2021)) +
+  geom_bar(position = "dodge") +
+  ggtitle("Netflix Productions According to Year") +
+  labs(x="Year", y="Media Count", fill="Media Type") +
+  theme_classic()+
+  scale_fill_brewer(palette="Set2")
+```
+
+One of the most important aspects of this data set is Netflix’s media release according to year. Netflix, at this point in 2022 is reaching a slight decrease in production. This is because Netflix has chosen to focus on building their series up, increasing their television series from their own production company. In Table 2, we can see that all series provided have more than 3 seasons, and were initially released in 2019 and 2020, where television series at Figure 4 are appearing to have reached a peak. This table was created using `knitr` [@knitr], and under `dplyr` [@dplyr], I was able to construct the applicable data. As mentioned in the introduction, Stranger Things, Netflix’s extremely popular series, took in 14.07 million viewers [@wiki]. Whilst it is indecisive whether this is a direct result of the streaming platform or the content itself, Netflix has made a name for its company that had not been appreciated formerly in its begginer years. Understood from these results is that by focusing directly on developing their content, increasing viewership, and strengthening the bond between users, Netflix hopes to curate a more identifiable brand.
+
+
+```{r table2, echo=FALSE}
+### Create table 2 ###
+# measure popular netflix series, their release date, and series
+cleaned_netflix |>
+  select(title, date_added, duration) |>
+  arrange(date_added) |>
+  filter(title == "Stranger Things" | title == "Riverdale" | title == "Elite" | title == "Peaky Blinders" | title == "Money Hiest" | title == "The Crown") |>
+# make table 
+    kable( caption = "Popular Netflix Series with Frequent Seasons",
+    col.names = c("Title", "Date of First Season", "Seasons"),
+    title = "Popular Netflix Series with Frequent Seasons",
+    digits = 1,
+    booktabs = TRUE, 
+    linesep = "",
+    align = c('l', 'l', 'c', 'c', 'r', 'r'),
+    format.args = list(big.mark = ",")
+  )
+```
+
+My research questions for this paper was: How does Netflix upkeep its populare status amongst the other competitive streaming platforms? What are the company’s strategies? How does Netflix function, and do is there any leniency regarding what is chosen to be streamed on their platform?
+
+As a results summary: `Table 1` is used to understand the potential biases within Netflix's country operations, and more specifically which countries obtain the highest production count. This, as a result concluded with the United States at number 1, which is who initially founded the streaming platform. `Figure 1` presents the most frequenly used ratings according to each television series and movie. It was conluded that the most popular for film and tlevision series are TV-14 and TV-MA. This provides insight to the type of productions that Netflix more commonly supports and puts on their streaming services. The content on Netflix that consumes the most viewers usually obtains a TV-MA rating. `Figure 2` demonstrates the most popular genres on the streaming platform, another crucial data set to be aware of to further understand how Netflix deciphers their content. `Figure 3` provides a deeper look at the frequent and radically increasing production count on the platform. More specially, we are able to compare the development of more media on to Netflix as a direct result of competing streaming platforms. Lastly, `Table 2` provides a few of Netflix's most popular series, their release dates, and how many seasons each series currently has. This demonstrates the effort Netflix is putting into their own production company and establishing confidence in their brand through the years.
+
+
+# 4. Discussion
+
+
+
+## 4.1 Competition
+
+Netflix, despite the competition among other platforms through the past five years, continues to rank at number one. This is not regardless of price, as despite losing many series and movies due to ownership in other platforms, Netflix contains something that other streaming platforms struggle with. This is the consideration of exclusive content, in which each platform is doing their best to be involved. The standard average price for a monthly subscription of Netflix today is currently $15.49 [@cnbc], much higher than it was before. However, in order to stay on top of other competing platforms, the consideration of developing high and in demand series, requires a slight increase in subscription. The curation of Netdlix’s own production company in 2013 [@wiki] was a major step, as observed in Figure 3 where the films and series began to increase rapidly on their platform. Many streaming services since have followed this trend of media only available on specific platforms. Netflix’s exclusive content has continued to grow and bring in incredible income, such as series Squid Games, which remained in the top 10 Netflix searches globally in 2021 [@cnbc]. It is impeccable to acknowledge that despite arising competitors, Netflix remains the first and most popular streaming service platform in the world. 
+
+## 4.2 Algorithim 
+
+As previously mentioned, Netflix’s internal functions are extremely fascinating, and have invoked an immense amount of intrigue. The streaming platform uses algorithm based thinking through their users history, ratings, and reviews, in order to provide their audiences with content that will appeal to them. This has contributed to Netflx’s continuous success, and directly coordinates to their increasing subscriber count. They were the first streaming platform to make this step. As the first streaming platform, it is strongly identified that, “Netflix is continually improving on selecting content that garners high viewer engagement”[@bias]. In this paper, I identify the correlation between uprising competition with other streaming platforms, and the stress that comes with standing out. By pushing specific series and films based on the user, it strengthens the personalized aspect of streaming. Algorithm based approaches put Netflix ahead of the other platforms, and defied their impeccable success.
+
+
+## 4.3 Support of Creative Industries
+
+Does Netflix support smaller production companies or films of lower popularity? Much criticism has been directed towards Netflix's inventory, which obtains a lot of high, big budget films, with hard-to-get directors and famous actors. However, critically acclaimed movies and televisions series come in many shapes and forms. Many independent films have to work twice as hard to get their creative work out there. In this data set, it obtains over 8,000 productions that have been published on Netflix internationally [@netflix]. As the number one streaming platform in the world, Netflix has the ability to bring creative industries with very little exposure to the surface. Although Netflix is not presented at the big screen in your local movie theater, it is an outlet that has the ability to reach millions of people across the globe in minutes [@cinema]. The Netflix Original television shows that obtain 3 or more seasons, such as Riverdale and Stranger Things as presented in `Table 2`, demonstrate the focus on larger budget and internally sourced productions, rather than outsourcing to support local and less famed creative industries. 
+
+## 4.4 Weaknesses and next steps
+
+In regards to the weaknesses of this data set, there is a lot of information missing about essential data within Netflix's status according to subscribers and their perspectives. For example, there is limited to no information about subscriber count through the years, or amount of viewers according to each television series and movie release. Because of this lack of information, I required a lot more research in order to support my assumptions about Netflix’s internal and external operations. 
+
+In addition to this, the organization of variables and content is limited. For example, in the `listed_in` variable, it provides a variety of different genres, including “Dramas”, “Comedies”, and more. However, it became difficult to clean at one point, because each entry obtained different titles regarding their genre. Developing the paper became complex at times where missing and absent data unfortunately stopped me from proceeding with potential graphing ideas. This is also acknowledged in the `rating` variable. It displays the rating according to age and audience of each media production on Netflix, however, there is no variable that provides viewer stars or opinions about the television series/movies. Thus, this is a weakness, because we do not have an audience perspective in the data set, and only the knowledge of how these shows and films are portrayed directly from Netflix's point of view. For next steps, I would strengthen the content within the data set, and allow for more room for interpretation by Netflix's audience and subscribers. 
+
+
+
+\newpage
+
+
+# References
+
+
